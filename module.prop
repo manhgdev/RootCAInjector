@@ -1,0 +1,7 @@
+id=rootcainjector
+name=RootCAInjector
+version=v1
+versionCode=1
+author=manhgdev
+description=Root CA Injector - Copy user certificates to system trust store with Android 17 support
+updateJson=https://raw.githubusercontent.com/manhgdev/RootCAInjector/master/update.json

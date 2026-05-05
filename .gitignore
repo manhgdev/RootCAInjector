@@ -1,0 +1,18 @@
+# Build artifacts
+release/
+*.zip
+
+# Logs
+*.log
+log.txt
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db

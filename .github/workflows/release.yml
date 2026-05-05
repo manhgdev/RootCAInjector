@@ -1,0 +1,103 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+    paths:
+      - 'update.json'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get version and increment versionCode
+        id: get_version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          if [ "$VERSION" = "$GITHUB_REF" ]; then
+            VERSION=$(grep "^version=" "$GITHUB_WORKSPACE/module.prop" | cut -d'=' -f2)
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          
+          # Only auto-increment versionCode on tag push
+          if [ "${{ github.event_name }}" = "push" ] && [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            CURRENT_CODE=$(grep "^versionCode=" "$GITHUB_WORKSPACE/module.prop" | cut -d'=' -f2)
+            NEW_CODE=$((CURRENT_CODE + 1))
+            echo "SHOULD_BUMP=true" >> $GITHUB_OUTPUT
+          else
+            NEW_CODE=$(grep "^versionCode=" "$GITHUB_WORKSPACE/module.prop" | cut -d'=' -f2)
+            echo "SHOULD_BUMP=false" >> $GITHUB_OUTPUT
+          fi
+          echo "CURRENT_CODE=$CURRENT_CODE" >> $GITHUB_OUTPUT
+          echo "NEW_CODE=$NEW_CODE" >> $GITHUB_OUTPUT
+          
+          echo "Version: $VERSION"
+          echo "Current versionCode: $CURRENT_CODE"
+          echo "New versionCode: $NEW_CODE"
+          echo "Should bump: ${{ steps.get_version.outputs.SHOULD_BUMP }}"
+
+      - name: Update versionCode in files
+        if: steps.get_version.outputs.SHOULD_BUMP == 'true'
+        run: |
+          NEW_CODE=${{ steps.get_version.outputs.NEW_CODE }}
+          sed -i "s/^versionCode=.*/versionCode=$NEW_CODE/" "$GITHUB_WORKSPACE/module.prop"
+          sed -i "s/\"versionCode\": [0-9]*/\"versionCode\": $NEW_CODE/" "$GITHUB_WORKSPACE/update.json"
+          
+          echo "Updated versionCode to $NEW_CODE"
+          cat "$GITHUB_WORKSPACE/module.prop"
+          cat "$GITHUB_WORKSPACE/update.json"
+
+      - name: Commit versionCode update
+        if: steps.get_version.outputs.SHOULD_BUMP == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add module.prop update.json
+          git commit -m "chore: bump versionCode to ${{ steps.get_version.outputs.NEW_CODE }}"
+          git push
+
+      - name: Build module zip
+        run: |
+          # Create release directory
+          mkdir -p release
+          
+          # Create module zip with proper structure
+          # Magisk/KernelSU module zip should have files at root level
+          cd "$GITHUB_WORKSPACE"
+          
+          # Create zip excluding .git, .github, release folder
+          zip -r "release/RootCAInjector.zip" . \
+            -x ".git/*" \
+            -x ".github/*" \
+            -x "release/*" \
+            -x "*.md" \
+            -x "LICENSE" \
+            -x ".gitignore"
+          
+          # List contents
+          echo "Module zip contents:"
+          unzip -l "release/RootCAInjector.zip"
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: RootCAInjector ${{ steps.get_version.outputs.VERSION }}
+          files: release/RootCAInjector.zip
+          generate_release_notes: true
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update latest release asset
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+        run: |
+          echo "Release created successfully!"
+          echo "Download URL: https://github.com/${{ github.repository }}/releases/latest/download/RootCAInjector.zip"
