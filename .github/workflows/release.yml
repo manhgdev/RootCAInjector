@@ -17,6 +17,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Get version and increment versionCode
         id: get_version
@@ -60,9 +62,10 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout main
           git add module.prop update.json
           git commit -m "chore: bump versionCode to ${{ steps.get_version.outputs.NEW_CODE }}"
-          git push
+          git push origin main
 
       - name: Build module zip
         run: |
