@@ -1,7 +1,7 @@
 id=rootcainjector
 name=RootCAInjector
 version=v1.2
-versionCode=12
+versionCode=13
 author=manhgdev
 description=Root CA Injector - Install external CAs in user and system stores
 updateJson=https://raw.githubusercontent.com/manhgdev/RootCAInjector/main/update.json
