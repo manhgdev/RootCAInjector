@@ -1,3 +1,8 @@
+## v1.2
+
+- Release a ZIP whose module metadata matches `versionCode=12`
+- Point update metadata and changelog URLs at the active `main` branch
+
 ## v1.1
 
 - Add an external CA inbox at `/data/adb/root-ca-injector/certs`

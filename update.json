@@ -1,6 +1,6 @@
 {
-    "version": "v1.1",
-    "versionCode": 4,
+    "version": "v1.2",
+    "versionCode": 12,
     "zipUrl": "https://github.com/manhgdev/RootCAInjector/releases/latest/download/RootCAInjector.zip",
-    "changelog": "https://raw.githubusercontent.com/manhgdev/RootCAInjector/master/CHANGELOG.md"
+    "changelog": "https://raw.githubusercontent.com/manhgdev/RootCAInjector/main/CHANGELOG.md"
 }
