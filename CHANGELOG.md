@@ -1,3 +1,10 @@
+## v1.1
+
+- Add an external CA inbox at `/data/adb/root-ca-injector/certs`
+- Copy external CAs to Android user trust stores and the system/Conscrypt store
+- Detect new external CA files while Android is running; no device reboot required
+- Preserve hash-colliding certificates instead of overwriting them
+
 ## v1
 
 - Initial release of RootCAInjector
